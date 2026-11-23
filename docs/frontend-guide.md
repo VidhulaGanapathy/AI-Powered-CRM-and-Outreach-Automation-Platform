@@ -406,7 +406,6 @@ Colors, score bands, and radii are defined in `src/styles/tokens.css`:
 - Props: `isOpen`, `onClose`, `onConfirm`, `provider`, `selectedRecords` or `selectedCount`, `estimatedCredits`, `remainingDailyCredits`, `remainingMonthlyCredits`.
 
 
----
 
 ## FE-32 – Accessibility and Responsive Audit Pass
 
@@ -472,4 +471,29 @@ The final automated accessibility scans reported zero Axe violations and Lightho
 
 Frontend linting and all 71 automated tests passed.
 
-The FE-32 zero-critical-Axe acceptance criterion was met for the tested states. Previously identified responsive limitations have been recorded for further review.
+
+=======
+### FE-31: Admin Source Registry & Budget Configuration
+- **Component**: `frontend/src/pages/Admin/Sources.jsx` (tests in `frontend/src/pages/Admin/Sources.test.jsx`).
+- **Route**: `/admin/sources` (with admin navigation card at `/admin`).
+- **Authorization**: Protected by `can(role, 'manage_sources_budgets')` (Admin role required). Unauthenticated users redirect to `/login`; unauthorized non-admins redirect to `/pipeline`.
+- **Scraper Source Registry**:
+  - Displays the canonical 8 approved sources from `database/seeds/001_demo.sql` (`internshala`, `naukri`, `apna`, `workindia`, `shine`, `hackathons`, `college_tpo`, `startups`).
+  - Read-only health status badges (`healthy`, `quarantined`, `disabled`).
+  - Interactive toggle switches controlling `isEnabled`. Clicking a toggle opens a confirmation modal comparing Old Value $\rightarrow$ New Value before applying.
+  - If a source's status is `disabled` or `quarantined`, enabling it displays an explicit warning note that it will not run until healthy.
+  - Quick filter buttons: **All**, **Enabled**, **Disabled** with registry-wide count badges (`7 Active`, `1 Disabled`).
+- **Enrichment & Outreach Budget Configuration**:
+  - Provisional monthly provider credit allocations: ContactOut (500 credits) and Snov.io (500 credits), inferred from the global 1,000 credit monthly budget.
+  - Daily outreach send limit defaults to 100 emails/day.
+  - Strict integer validation: rejects negative numbers, decimals, non-numeric strings, and empty inputs. Explicitly permits zero (`0`).
+  - Clicking **Review & Save Budget Changes** captures an immutable configuration snapshot and presents a diff table comparing Old Value $\rightarrow$ New Value for only modified fields before applying.
+- **Mock API Architecture**:
+  - Because `contracts/openapi.yaml` currently does not define configuration endpoints, an in-file mock API layer (`fetchSources`, `updateSourceToggle`, `fetchBudgetSettings`, `updateBudgetSettings`) is provided inside `Sources.jsx`.
+  - Respects `VITE_USE_MOCKS === 'true'` following the repository convention. Never makes calls to fictitious or uncontracted backend endpoints.
+  - Explicit notices inform users that changes modify in-memory session state only and reset upon page reload.
+### FE-33: Frontend Component Tests (Vitest)
+- **Files**: `src/pages/Login/__tests__/Login.test.jsx`, `src/pages/EnrichmentQueue/__tests__/EnrichmentQueue.test.jsx`, `src/pages/EnrichmentQueue/__tests__/History.test.jsx`, `src/pages/CampaignManager/__tests__/Controls.test.jsx`, `src/pages/LeadPipeline/__tests__/LeadTable.test.jsx`.
+- Added Vitest + React Testing Library component test suites using mocked data/services (`vi.mock`) covering loading, populated render, empty, error, and primary interaction states.
+- Verified locally with `npm test`, `npm run lint` (`--max-warnings 0`), and `npm run build`.
+
