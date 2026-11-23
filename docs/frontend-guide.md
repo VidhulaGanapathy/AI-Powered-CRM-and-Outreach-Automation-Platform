@@ -404,3 +404,72 @@ Colors, score bands, and radii are defined in `src/styles/tokens.css`:
 - The **Confirm & Deduct Credits** button is disabled, with a clear `role="alert"` reason, when the estimated cost exceeds the remaining daily or monthly budget, when no records are selected, or when the provider is unsupported. The same guard is repeated inside the click handler.
 - The component makes no API calls itself. The parent should start enrichment only from `onConfirm`; Escape, the X button, the backdrop and Cancel only call `onClose`.
 - Props: `isOpen`, `onClose`, `onConfirm`, `provider`, `selectedRecords` or `selectedCount`, `estimatedCredits`, `remainingDailyCredits`, `remainingMonthlyCredits`.
+
+
+---
+
+## FE-32 – Accessibility and Responsive Audit Pass
+
+### Objective
+
+Perform accessibility and responsive testing across the AI CRM frontend using Axe DevTools, Google Lighthouse and manual keyboard testing.
+
+The audit covers mobile (360px), tablet (768px) and desktop (1280px) viewport widths.
+
+The primary acceptance criterion is zero critical Axe accessibility violations.
+
+### Accessibility Fixes Implemented
+
+- **Login Page:** Added a semantic `<main>` landmark to improve page structure.
+- **Lead Pipeline:** Added accessible names to dropdown filters using ARIA labels.
+- **Global Styles:** Improved visible keyboard focus indicators.
+- **Enrichment Queue:** Improved table-header text contrast to meet accessibility requirements.
+- **Enrichment History:** Added keyboard accessibility to the scrollable table region.
+- **Design Tokens:** Adjusted text colour contrast where required, subject to the final Git diff.
+- **UI Kitchen Sink:** Corrected missing accessible names for form controls, where included in the approved changes.
+
+### Accessibility Audit Results
+
+- **Axe DevTools:** Final scans reported zero accessibility violations across the audited CRM tabs.
+- **Google Lighthouse:** Final Accessibility scores were reported as 100/100 across the audited CRM tabs.
+- **Keyboard Accessibility:** Focus visibility and keyboard-operable controls were reviewed during testing.
+
+Automated accessibility scores do not guarantee complete accessibility. Manual testing remains necessary.
+
+### Responsive Testing
+
+The following viewport widths were used:
+
+- **Mobile:** 360px
+- **Tablet:** 768px
+- **Desktop:** 1280px
+
+Responsive checks included page layout, navigation, forms, tables, buttons and horizontal scrolling.
+
+### Known Limitations
+
+- A fixed-width sidebar was observed restricting the available content area on mobile screens.
+- Changes to the shared sidebar and related layout components were not made, following the team lead's instructions.
+- Some backend requests failed during testing, and available offline fixture data was used for certain screens.
+
+### Frontend Test Verification
+
+**Lint Verification**
+- Command: `npm run lint`
+- Tool: ESLint
+- Result: Passed with no reported errors or warnings.
+
+**Automated Unit Tests**
+- Command: `npm run test`
+- Tool: Vitest v1.6.1
+- Test files: 10 passed
+- Individual tests: 71 passed
+- Failed tests: 0
+
+### Conclusion
+
+The final automated accessibility scans reported zero Axe violations and Lighthouse Accessibility scores of 100/100 across the audited CRM tabs.
+
+Frontend linting and all 71 automated tests passed.
+
+The FE-32 zero-critical-Axe acceptance criterion was met for the tested states. Previously identified responsive limitations have been recorded for further review.
