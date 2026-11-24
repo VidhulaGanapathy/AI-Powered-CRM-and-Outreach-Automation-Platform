@@ -1,23 +1,42 @@
+
 """
 Campaign Management and AI Draft Generation Router.
 """
 
-from typing import List, Optional
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+
+from backend.app.core.db import get_pool
 from backend.app.core.security import require_roles
 
-router = APIRouter(prefix="/campaigns", tags=["Campaigns & Drafts"])
+from backend.app.services.draft_service import (
+    DraftService,
+    IneligibleLeadError,
+    DraftNotFoundError,
+)
+
+from ai.gemini_client import GeminiClient
+
+
+router = APIRouter(
+    prefix="/campaigns",
+    tags=["Campaigns & Drafts"],
+)
 
 
 class DraftRequest(BaseModel):
     opportunity_id: str
     recipient_contact_method_id: str
-    tone: Optional[str] = "hr"
-
+    tone: Literal["hr", "tpo", "startup_founder"] = "hr"
 
 @router.get("")
-def list_campaigns(current_user: dict = Depends(require_roles(["admin", "campaign_manager"]))):
+def list_campaigns(
+    current_user: dict = Depends(
+        require_roles(["admin", "campaign_manager"])
+    ),
+):
     """Lists available campaigns."""
     return [
         {
@@ -25,34 +44,58 @@ def list_campaigns(current_user: dict = Depends(require_roles(["admin", "campaig
             "name": "Q4 2026 Fresher Talent Outreach",
             "purpose": "Connecting verified technical freshers with tech startups and scaleups",
             "status": "active",
-            "daily_limit": 50
+            "daily_limit": 50,
         }
     ]
-
-
-@router.post("/{id}/drafts")
+    
+@router.post(
+    "/{id}/drafts",
+    status_code=status.HTTP_200_OK,
+)
 def generate_draft(
     id: str,
     payload: DraftRequest,
-    current_user: dict = Depends(require_roles(["admin", "campaign_manager"]))
+    current_user: dict = Depends(
+        require_roles(["admin", "campaign_manager"])
+    ),
 ):
     """
-    Generates AI outreach draft using Gemini Flash based strictly on verified opportunity facts.
+    Generate and save an AI campaign draft.
+
+    This endpoint does not send or dispatch messages.
     """
-    return {
-        "draft_id": "draft_mock_001",
-        "campaign_id": id,
-        "model": "gemini-1.5-flash",
-        "prompt_version": "v1.0.0",
-        "ai_output": {
-            "subject": "Regarding your Junior Python Developer opening",
-            "body": "Hi Sarah,\n\nI noticed your recent opening for a Junior Python Developer on Internshala. Our candidates bring hands-on experience building FastAPI microservices and Dockerized systems.\n\nWould you be open to reviewing a few profiles this week?\n\nBest regards,\nCarlos Campaigner",
-            "personalization_summary": "Tailored for Acme AI Systems entry-level Python requirement.",
-            "claims_used": [
-                {"fact_id": "fact_role", "claim": "Junior Python Developer"},
-                {"fact_id": "fact_source", "claim": "Posted on Internshala"}
-            ],
-            "missing_information_warnings": [],
-            "confidence_note": "High confidence based on deliverable verified recruiter contact."
-        }
-    }
+
+    try:
+        service = DraftService(
+            db=get_pool(),
+            gemini_client=GeminiClient(),
+        )
+
+        result = service.generate_draft(
+            campaign_id=id,
+            opportunity_id=payload.opportunity_id,
+            recipient_contact_method_id=(
+                payload.recipient_contact_method_id
+            ),
+            tone=payload.tone,
+        )
+
+        return result
+
+    except IneligibleLeadError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
+
+    except DraftNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
