@@ -419,13 +419,13 @@ The primary acceptance criterion is zero critical Axe accessibility violations.
 
 ### Accessibility Fixes Implemented
 
-- **Login Page:** Added a semantic `<main>` landmark to improve page structure.
+- **Login Page:** Added a semantic `<main>` landmark to the Login page. The `/login` route bypasses the shared `MainLayout` wrapper, so the Login page provides its own main landmark. Verified that exactly one main landmark is rendered with no nested main landmarks.
 - **Lead Pipeline:** Added accessible names to dropdown filters using ARIA labels.
 - **Global Styles:** Improved visible keyboard focus indicators.
 - **Enrichment Queue:** Improved table-header text contrast to meet accessibility requirements.
 - **Enrichment History:** Added keyboard accessibility to the scrollable table region.
-- **Design Tokens:** Adjusted text colour contrast where required, subject to the final Git diff.
-- **UI Kitchen Sink:** Corrected missing accessible names for form controls, where included in the approved changes.
+- **Design Tokens:** Updated `--color-text-light` from `#94a3b8` to `#64748b` in `frontend/src/styles/tokens.css` to improve text contrast.
+- **UI Kitchen Sink:** Added accessible names to the Email Input with Error and Filter by Source controls using `aria-label` attributes in `frontend/src/pages/_Kitchen/index.jsx`.
 
 ### Accessibility Audit Results
 
@@ -461,18 +461,20 @@ Responsive checks included page layout, navigation, forms, tables, buttons and h
 **Automated Unit Tests**
 - Command: `npm run test`
 - Tool: Vitest v1.6.1
-- Test files: 10 passed
-- Individual tests: 71 passed
+- Test files: 16 passed
+- Individual tests: 134 passed
 - Failed tests: 0
+- Environment: Node.js v25.8.2, with a temporary valid `--localstorage-file` setting to support Login tests.
+
 
 ### Conclusion
 
 The final automated accessibility scans reported zero Axe violations and Lighthouse Accessibility scores of 100/100 across the audited CRM tabs.
 
-Frontend linting and all 71 automated tests passed.
+Frontend linting and all 134 automated tests passed after syncing with the latest main branch.
 
 
-=======
+
 ### FE-31: Admin Source Registry & Budget Configuration
 - **Component**: `frontend/src/pages/Admin/Sources.jsx` (tests in `frontend/src/pages/Admin/Sources.test.jsx`).
 - **Route**: `/admin/sources` (with admin navigation card at `/admin`).
