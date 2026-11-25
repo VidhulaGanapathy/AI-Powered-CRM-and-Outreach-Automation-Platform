@@ -464,8 +464,6 @@ Responsive checks included page layout, navigation, forms, tables, buttons and h
 - Test files: 16 passed
 - Individual tests: 134 passed
 - Failed tests: 0
-- Environment: Node.js v25.8.2, with a temporary valid `--localstorage-file` setting to support Login tests.
-
 
 ### Conclusion
 
